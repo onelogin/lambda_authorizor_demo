@@ -43,7 +43,7 @@ cp .env.sample .env
 
 Modify the `.env`:
 * `TOKEN_ISSUER`: The issuer of the token. If you're using OneLogin as the token issuer, this would be: `https://<tenant>.onelogin.com/oidc/2`
-* `JWKS_URI`: This is the URL of the associated JWKS endpoint. If you are using OneLogin as the token issuer, this would be: `https://r2d2.onelogin.com/oidc/certs`
+* `JWKS_URI`: This is the URL of the associated JWKS endpoint. If you are using OneLogin as the token issuer, this would be: `https://<tenant>.onelogin.com/oidc/certs`
 * `AUDIENCE`: This is the required audience of the token. Typically with Onelogin this will be the client ID.
 
 You can test the custom authorizer locally. You just need to obtain a valid JWT access token to perform the test. 

@@ -1,60 +1,46 @@
 require('dotenv').config({ silent: true });
 
 
+
+ /*
+ * Sample Lambda Authorizer to validate tokens originating from
+ * OneLogin OIDC Provider and generate an IAM Policy
+ */
 const jwksClient = require('jwks-rsa');
 const jwt = require('jsonwebtoken');
 const util = require('util');
 
-/*
- * Sample Lambda Authorizer to validate tokens originating from
- * OneLogin OIDC Provider and generate an IAM Policy
- */
-
 const apiPermissions = [
   {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
+    "arn": "arn:aws:execute-api:us-east-1:<AWSAccount>:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
     "resource": "pets", // NOTE: Replace with your API Gateway Resource
     "stage": "dev", // NOTE: Replace with your API Gateway Stage
     "httpVerb": "GET",
     "scope": "openid"
   },
   {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
-    "resource": "pets", // NOTE: Replace with your API Gateway Resource
-    "stage": "dev", // NOTE: Replace with your API Gateway Stage
-    "httpVerb": "OPTIONS",
-    "scope": "openid"
-  },
-  {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
-    "resource": "pets", // NOTE: Replace with your API Gateway Resource
-    "stage": "dev", // NOTE: Replace with your API Gateway Stage
-    "httpVerb": "POST",
-    "scope": "openid"
-  },
-  {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
-    "resource": "pets", // NOTE: Replace with your API Gateway Resource
-    "stage": "dev", // NOTE: Replace with your API Gateway Stage
-    "httpVerb": "GET",
-    "scope": "openid"
-  },
-  {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
+    "arn": "arn:aws:execute-api:us-east-1:<AWSAccount>:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
     "resource": "pets", // NOTE: Replace with your API Gateway Resource
     "stage": "dev", // NOTE: Replace with your API Gateway Stage
     "httpVerb": "OPTIONS",
     "scope": "email"
   },
   {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
+    "arn": "arn:aws:execute-api:us-east-1:<AWSAccount>:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
+    "resource": "pets", // NOTE: Replace with your API Gateway Resource
+    "stage": "dev", // NOTE: Replace with your API Gateway Stage
+    "httpVerb": "POST",
+    "scope": "openid"
+  },
+  {
+    "arn": "arn:aws:execute-api:us-east-1:<AWSAccount>:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
     "resource": "pets/*", // NOTE: Replace with your API Gateway Resource
     "stage": "dev", // NOTE: Replace with your API Gateway Stage
     "httpVerb": "GET",
     "scope": "openid"
   },
   {
-    "arn": "arn:aws:execute-api:us-east-1:629240877401:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
+    "arn": "arn:aws:execute-api:us-east-1:<AWSAccount>:3h7vfljsrj", // NOTE: Replace with your API Gateway API ARN
     "resource": "pets/*", // NOTE: Replace with your API Gateway Resource
     "stage": "dev", // NOTE: Replace with your API Gateway Stage
     "httpVerb": "OPTIONS",
@@ -158,21 +144,22 @@ exports.handler = async function(event, context) {
   // Declare Policy
   var iamPolicy = null;
 
-  await verifyAccessToken(event).then(data => {
-    // Retrieve token scopes
+  try {
+    var data = await verifyAccessToken(event);
     var scopeClaims = data.scope;
-    // Generate IAM Policy
-    iamPolicy = generateIAMPolicy(data.sub,scopeClaims);
-    console.log(JSON.stringify(iamPolicy))
-  })
-  .catch(err => {
+    iamPolicy = generateIAMPolicy(data.sub, scopeClaims);
+    console.log(JSON.stringify(iamPolicy));
+  } catch(err) {
     console.log(err);
-    // Generate default deny all policy statement if there is an error
     var policyStatements = [];
     var policyStatement = generatePolicyStatement("*", "*", "*", "*", "Deny");
     policyStatements.push(policyStatement);
     iamPolicy = generatePolicy('user', policyStatements);
-  });
+
+
+  }
   return iamPolicy;
 };  
+
+
 
